@@ -29,8 +29,13 @@ impl Iterator for Wheel30 {
 }
 
 
+pub fn maybe_primenumber() -> impl Iterator<Item=u64> {
+    [2, 3, 5].into_iter().chain(Wheel30::new())
+}
+
+
 pub fn factors(n: u64) -> Vec<u64> {
-    let maybe_prime = [2, 3, 5].into_iter().chain(Wheel30::new());
+    let maybe_prime = maybe_primenumber();
     let mut ret = Vec::new();
     let mut value = n;
 
@@ -56,9 +61,9 @@ pub fn answer(n: u64) -> u64 {
 mod tests {
     #[test]
     fn test_wheel30() {
-        use super::Wheel30;
+        use super::maybe_primenumber;
 
-        let mut iter = [2, 3, 5].into_iter().chain(Wheel30::new());
+        let mut iter = maybe_primenumber();
 
         assert_eq!(iter.next(), Some(2));
         assert_eq!(iter.next(), Some(3));
