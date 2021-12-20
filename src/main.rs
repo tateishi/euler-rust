@@ -9,5 +9,5 @@ fn main() {
     println!("Problem 002, the answer is {}", pr002::answer(40000000));
     println!("Problem 003, the answer is {}", pr003::answer(600851475143));
     println!("Problem 004, the answer is {}", pr004::answer((100..1000).collect(), (100..1000).collect()));
-    println!("{:?}", pr005::factors(999));
+    println!("Problem 005, the answer is {}", pr005::answer(20));
 }

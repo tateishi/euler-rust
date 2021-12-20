@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::cmp::max;
+
 
 const WHEEL30: [u64; 8] = [7, 11, 13, 17, 19, 23, 29, 31];
 
@@ -34,125 +37,79 @@ pub fn maybe_primenumber() -> impl Iterator<Item=u64> {
 }
 
 
-#[derive(Debug)]
-pub struct PrimeCount {
-    prime: u64,
-    count: usize,
-}
-
-
-impl PrimeCount {
-    pub fn new(p: u64) -> PrimeCount {
-        PrimeCount {
-            prime: p,
-            count: 1,
-        }
-    }
-
-    pub fn add(&self, n: u64) -> PrimeCount {
-        if self.prime == n {
-            PrimeCount {
-                prime: self.prime,
-                count: self.count + 1,
-            }
-        } else {
-            PrimeCount {
-                prime: self.prime,
-                count: self.count,
-            }
-        }
-    }
-
-    pub fn to_number(&self) -> u64 {
-        use std::iter;
-
-        iter::repeat(self.prime).take(self.count).product()
-    }
-}
-
-
-pub fn factors(n: u64) -> Vec<PrimeCount> {
+pub fn factors(n: u64) -> HashMap<u64, u64> {
     let maybe_prime = maybe_primenumber();
-    let mut ret = Vec::new();
+    let mut fact = HashMap::new();
     let mut value = n;
 
     for p in maybe_prime.take_while(|x| *x <= n) {
         if value == 1 {
             break;
         }
-        if value % p == 0 {
-            ret.push(PrimeCount::new(p));
-            value /= p;
-        }
+
         while value % p == 0 {
-            ret = ret.into_iter().map(|pc| pc.add(p)).collect();
+            let e = fact.entry(p).or_insert(0_u64);
+            *e += 1;
             value /= p;
         }
     }
-
-    ret
+    fact
 }
 
 
-pub fn to_number(v: Vec<PrimeCount>) -> u64 {
-    let mut ret: u64 = 1;
-
-    for pc in v.into_iter() {
-        ret *= pc.to_number();
+pub fn max_factors(a: &mut HashMap<u64, u64>, b: &HashMap<u64, u64>) -> () {
+    for (k, v) in b {
+        let e = a.entry(*k).or_insert(*v);
+        *e = max(*e, *v);
     }
+}
 
-    ret
+
+pub fn to_number(h: &HashMap<u64, u64>) -> u64 {
+    h.iter().map(|(k, v)| k.pow(*v as u32)).product()
+}
+
+
+pub fn answer(n: u64) -> u64 {
+    if n == 1 {
+        return 1;
+    }
+    if n == 2 {
+        return 2;
+    }
+    let mut fact = factors(2);
+    for m in 3..=n {
+        max_factors(&mut fact, &factors(m));
+    }
+    to_number(&fact)
 }
 
 
 #[cfg(test)]
 mod tests {
     #[test]
-    fn test_new() {
-        use super::PrimeCount;
-
-        let pc = PrimeCount::new(2);
-
-        assert_eq!(pc.prime, 2);
-        assert_eq!(pc.count, 1);
-    }
-
-    #[test]
-    fn test_add() {
-        use super::PrimeCount;
-
-        let pc = PrimeCount::new(2);
-        let pc2 = pc.add(2);
-        assert_eq!(pc2.prime, 2);
-        assert_eq!(pc2.count, 2);
-
-        let pc3 = pc.add(2).add(3);
-        assert_eq!(pc3.prime, 2);
-        assert_eq!(pc3.count, 2);
-    }
-
-    #[test]
-    fn test_to_number() {
-        use super::PrimeCount;
-
-        let pc = PrimeCount::new(2);
-        let pc2 = pc.add(2);
-        assert_eq!(pc2.to_number(), 4);
-
-        let pc = PrimeCount::new(3);
-        let pc2 = pc.add(3);
-        assert_eq!(pc2.to_number(), 9);
-    }
-
-    #[test]
     fn test_factors() {
         use super::factors;
+        use super::max_factors;
         use super::to_number;
 
-        let facts = factors(12);
-        assert_eq!(facts[0].to_number(), 4);
-        assert_eq!(facts[1].to_number(), 3);
-        assert_eq!(to_number(facts), 12);
+
+        let mut a = factors(2);
+        println!("{:?}", a);
+        for n in 3..=10 {
+            max_factors(&mut a, &factors(n));
+        }
+
+        assert_eq!(to_number(&a), 2520);
     }
 
+    #[test]
+    fn test_lcm() {
+        use super::answer;
+
+        assert_eq!(answer(1), 1);
+        assert_eq!(answer(2), 2);
+        assert_eq!(answer(3), 6);
+        assert_eq!(answer(10), 2520);
+    }
 }
