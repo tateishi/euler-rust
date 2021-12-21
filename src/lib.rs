@@ -5,6 +5,7 @@ pub mod pr004;
 pub mod pr005;
 pub mod pr006;
 
+pub mod prime;
 
 #[cfg(test)]
 mod tests {
