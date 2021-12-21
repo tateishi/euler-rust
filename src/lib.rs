@@ -4,6 +4,7 @@ pub mod pr003;
 pub mod pr004;
 pub mod pr005;
 pub mod pr006;
+pub mod pr007;
 
 pub mod prime;
 
